@@ -312,6 +312,19 @@ def create_prediction_result(session: Session, gateway_name: str, device_name: s
     session.add(db_instance)
     session.commit()
 
+def delete_prediction_results(session: Session, gateway_name: str, device_name: str):
+    # Check if the edge gateway exists
+    read_edge_gateway(session=session, device_name=gateway_name)
+
+    # Check if the edge sensor exists
+    read_edge_sensor(session=session, gateway_name=gateway_name, device_name=device_name)
+
+    readings = read_sensor_readings(session=session, gateway_name=gateway_name, device_name=device_name)
+    for reading in readings:
+        if reading.prediction_result:
+            session.delete(reading.prediction_result)
+    session.commit()
+
 # --- CRUD methods for InferenceLatencyBenchmark ---
 def create_inference_latency_benchmark(session: Session, gateway_name: str, device_name: str, reading_uuid: str, fields: dict):
     # Check if the edge gateway exists
@@ -335,3 +348,16 @@ def create_inference_latency_benchmark(session: Session, gateway_name: str, devi
     session.add(db_instance)
     session.commit()
 
+
+def delete_inference_latency_benchmarks(session: Session, gateway_name: str, device_name: str):
+    # Check if the edge gateway exists
+    read_edge_gateway(session=session, device_name=gateway_name)
+
+    # Check if the edge sensor exists
+    read_edge_sensor(session=session, gateway_name=gateway_name, device_name=device_name)
+
+    readings = read_sensor_readings(session=session, gateway_name=gateway_name, device_name=device_name)
+    for reading in readings:
+        if reading.prediction_result and reading.prediction_result.inference_latency_benchmark:
+            session.delete(reading.prediction_result.inference_latency_benchmark)
+    session.commit()
