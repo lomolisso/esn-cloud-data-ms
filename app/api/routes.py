@@ -131,7 +131,8 @@ async def create_edge_sensor(gateway_name: str, sensor: schemas.CreateEdgeSensor
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Edge gateway not found")
     except crud.EdgeSensorAlreadyExists:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Edge sensor already exists")
-    except:
+    except Exception as e:
+        print(e)
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Something went wrong")
     
 @router.put("/gateway/{gateway_name}/sensor/{sensor_name}", status_code=status.HTTP_200_OK, tags=["Edge Sensor"])
@@ -318,26 +319,20 @@ async def create_prediction_result(gateway_name: str, sensor_name: str, reading_
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Prediction result already exists")
 
 # --- Inference Latency Benchmark ---
-@router.post("/gateway/{gateway_name}/sensor/{sensor_name}/reading/{reading_uuid}/inference/latency", status_code=status.HTTP_201_CREATED, tags=["Inference Latency Benchmark"])
-async def create_inference_latency_benchmark(gateway_name: str, sensor_name: str, reading_uuid: str, benchmark: schemas.InferenceLatencyBenchmark, session: Session = Depends(get_session)):
+@router.post("/gateway/{gateway_name}/sensor/{sensor_name}/inference/latency", status_code=status.HTTP_201_CREATED, tags=["Inference Latency Benchmark"])
+async def create_inference_latency_benchmark(gateway_name: str, sensor_name: str, benchmark: schemas.InferenceLatencyBenchmark, session: Session = Depends(get_session)):
     """
-    POST /gateway/{gateway_name}/sensor/{sensor_name}/reading/{reading_uuid}/inference/latency endpoint
+    POST /gateway/{gateway_name}/sensor/{sensor_name}/inference/latency endpoint
 
     Endpoint to create a new inference latency benchmark for a specific sensor reading.
     """
     
     try:
-        crud.create_inference_latency_benchmark(session=session, gateway_name=gateway_name, device_name=sensor_name, reading_uuid=reading_uuid, fields=benchmark.model_dump())
+        crud.create_inference_latency_benchmark(session=session, gateway_name=gateway_name, device_name=sensor_name, fields=benchmark.model_dump())
     except crud.EdgeGatewayNotFound:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Edge gateway not found")
     except crud.EdgeSensorNotFound:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Edge sensor not found")
-    except crud.SensorReadingNotFound:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Sensor reading not found")
-    except crud.PredictionResultNotFound:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Prediction result not found")
-    except crud.InferenceLatencyBenchmarkAlreadyExists:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Inference latency benchmark already exists")
     except Exception as e:
-        print("\n\n\n\n", e, "\n\n\n\n")
+        print(e)
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Something went wrong")

@@ -93,11 +93,17 @@ class ReadEdgeSensor(BaseDeviceSchema):
 
 
 # --- Inference Latency Benchmark Schemas ---
+class InferenceLayer(int, enum.Enum):
+    CLOUD = 2
+    GATEWAY = 1
+    SENSOR = 0
+    
 class InferenceLatencyBenchmark(BaseModel):
     """
     Schema for an inference latency benchmark.
     """
-
+    sensor_name: str
+    inference_layer: InferenceLayer
     send_timestamp: int
     recv_timestamp: int
     inference_latency: int
@@ -108,10 +114,6 @@ class InferenceLatencyBenchmark(BaseModel):
 
 # --- Inference Result Schemas ---
 
-class InferenceLayer(int, enum.Enum):
-    CLOUD = 2
-    GATEWAY = 1
-    SENSOR = 0
 
 class CreatePredictionResult(BaseModel):
     """

@@ -49,11 +49,6 @@ class PredictionResultAlreadyExists(Exception):
         self.message = message
         super().__init__(self.message)
 
-class InferenceLatencyBenchmarkAlreadyExists(Exception):
-    def __init__(self, message="Inference latency benchmark already exists."):
-        self.message = message
-        super().__init__(self.message)
-
 # --- CRUD methods for EdgeGateway ---
 
 def read_edge_gateways(session: Session, paginate=False, page=0, page_size=10) -> list[models.EdgeGateway]:
@@ -326,38 +321,30 @@ def delete_prediction_results(session: Session, gateway_name: str, device_name: 
     session.commit()
 
 # --- CRUD methods for InferenceLatencyBenchmark ---
-def create_inference_latency_benchmark(session: Session, gateway_name: str, device_name: str, reading_uuid: str, fields: dict):
+def create_inference_latency_benchmark(session: Session, gateway_name: str, device_name: str, fields: dict):
     # Check if the edge gateway exists
     read_edge_gateway(session=session, device_name=gateway_name)
 
     # Check if the edge sensor exists
     read_edge_sensor(session=session, gateway_name=gateway_name, device_name=device_name)
-
-    # Check if the sensor reading exists
-    reading = read_sensor_reading(session=session, gateway_name=gateway_name, device_name=device_name, reading_uuid=reading_uuid)
-
-    # Check if the prediction result exists
-    if not reading.prediction_result:
-        raise PredictionResultNotFound
     
-    # Check if the inference latency benchmark already exists
-    if reading.prediction_result.inference_latency_benchmark:
-        raise InferenceLatencyBenchmarkAlreadyExists
-    
-    db_instance = models.InferenceLatencyBenchmark(prediction_result_uuid=reading.prediction_result.uuid, **fields)
+    db_instance = models.InferenceLatencyBenchmark(**fields)
     session.add(db_instance)
     session.commit()
 
+def read_inference_latency_benchmarks(session: Session, paginate=False, page=0, page_size=10) -> list[models.InferenceLatencyBenchmark]:
+    query = select(models.InferenceLatencyBenchmark)
+    if paginate:
+        query = query.offset(page).limit(page_size)
+    result = session.execute(query)
+    return result.scalars().all()
 
-def delete_inference_latency_benchmarks(session: Session, gateway_name: str, device_name: str):
-    # Check if the edge gateway exists
-    read_edge_gateway(session=session, device_name=gateway_name)
 
-    # Check if the edge sensor exists
-    read_edge_sensor(session=session, gateway_name=gateway_name, device_name=device_name)
+def delete_inference_latency_benchmarks(session: Session):
+    query = select(models.InferenceLatencyBenchmark)
+    result = session.execute(query)
+    benchmarks = result.scalars().all()
+    for benchmark in benchmarks:
+        session.delete(benchmark)
 
-    readings = read_sensor_readings(session=session, gateway_name=gateway_name, device_name=device_name)
-    for reading in readings:
-        if reading.prediction_result and reading.prediction_result.inference_latency_benchmark:
-            session.delete(reading.prediction_result.inference_latency_benchmark)
-    session.commit()
+    

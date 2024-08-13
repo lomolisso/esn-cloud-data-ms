@@ -154,12 +154,6 @@ class PredictionResult(Base):
     sensor_reading_uuid = Column(UUID(as_uuid=False), ForeignKey("sensor_reading_table.uuid"))
     sensor_reading = relationship("SensorReading", back_populates="prediction_result")
 
-    inference_latency_benchmark = relationship(
-        "InferenceLatencyBenchmark",
-        uselist=False,
-        back_populates="prediction_result"
-    )
-
 class InferenceLatencyBenchmark(Base):
     """
     Inference latency benchmark table
@@ -176,11 +170,9 @@ class InferenceLatencyBenchmark(Base):
     __tablename__ = "inference_latency_benchmark_table"
 
     uuid = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
-    
+    sensor_name = Column(String(50), nullable=False)
+    inference_layer = Column(Enum(InferenceLayer), nullable=False)
     send_timestamp = Column(BigInteger, nullable=False)
     recv_timestamp = Column(BigInteger, nullable=False)
     inference_latency = Column(BigInteger, nullable=False)
     registered_at = Column(DateTime, default=tz_now) 
-
-    prediction_result_uuid = Column(UUID(as_uuid=False), ForeignKey("prediction_result_table.uuid"), unique=True)
-    prediction_result = relationship("PredictionResult", back_populates="inference_latency_benchmark")

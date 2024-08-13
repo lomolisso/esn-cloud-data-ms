@@ -10,13 +10,13 @@ from app.db.crud import read_edge_gateways, read_edge_sensors, delete_inference_
 
 def main():
     session = SessionLocal()
+    delete_inference_latency_benchmarks(session=session)
 
     edge_gateways = read_edge_gateways(session=session)
 
     for edge_gateway in edge_gateways:
         edge_sensors = read_edge_sensors(session=session, gateway_name=edge_gateway.device_name)
         for edge_sensor in edge_sensors:
-            delete_inference_latency_benchmarks(session=session, gateway_name=edge_gateway.device_name, device_name=edge_sensor.device_name)
             delete_prediction_results(session=session, gateway_name=edge_gateway.device_name, device_name=edge_sensor.device_name)
             delete_sensor_readings(session=session, gateway_name=edge_gateway.device_name, device_name=edge_sensor.device_name)
 
