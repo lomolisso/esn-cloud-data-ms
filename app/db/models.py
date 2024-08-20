@@ -160,7 +160,7 @@ class InferenceLatencyBenchmark(Base):
 
     Attributes:
     uuid: UUID, primary key
-    send_timestamp: Integer, timestamp when the inference request was sent by the sensor, taken from the on-board timer.
+    send_timestamp: Optional[int] = Noneeger, timestamp when the inference request was sent by the sensor, taken from the on-board timer.
     recv_timestamp: Integer, timestamp when the prediction result was received by the sensor, taken from the on-board timer.
     inference_latency: Integer, latency of the prediction result, calculated as the difference between the recv_timestamp and the send_timestamp.
     prediction_result_uuid: UUID, foreign key to the prediction_result_table.
